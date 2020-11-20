@@ -1,6 +1,4 @@
-createAutoComplete({
-    // Location in HTML where autocomplete is located
-    root: document.querySelector('.autocomplete'),
+const autoCompleteConfig = {
     // Render each movie option in dropdown
     renderOption(movie) {
         const imgSrc = movie.Poster === 'N/A' ? '' : movie.Poster;
@@ -8,10 +6,6 @@ createAutoComplete({
             <img src="${imgSrc}"/>
             ${movie.Title} (${movie.Year})
         `;
-    },
-    // Fetch data from API on the selected option and render it to the page
-    onOptionSelect(movie) {
-        onMovieSelect(movie);
     },
     // Change input value to the selected movie title
     inputValue(movie) {
@@ -32,10 +26,36 @@ createAutoComplete({
     
         return response.data.Search;
     }
+};
+
+createAutoComplete({
+    // Copy everything inside of autoCompleteConfig
+    ...autoCompleteConfig,
+    // Location in HTML where left autocomplete is located
+    root: document.querySelector('#left-autocomplete'),
+    onOptionSelect(movie) {
+        // Hide tutorial when user clicks on a movie option
+        document.querySelector('.tutorial').classList.add('is-hidden');
+        // Fetch data from API on the selected option and render it to the page
+        onMovieSelect(movie, document.querySelector('#left-summary'));
+    },
+});
+
+createAutoComplete({
+    // Copy everything inside of autoCompleteConfig
+    ...autoCompleteConfig,
+    // Location in HTML where right autocomplete is located
+    root: document.querySelector('#right-autocomplete'),
+    onOptionSelect(movie) {
+        // Hide tutorial when user clicks on a movie option
+        document.querySelector('.tutorial').classList.add('is-hidden');
+        // Fetch data from API on the selected option and render it to the page
+        onMovieSelect(movie, document.querySelector('#right-summary'));
+    },
 });
 
 // Fetch detailed data about a selected movie
-const onMovieSelect = async movie => {
+const onMovieSelect = async (movie, summaryElement) => {
     const response = await axios.get('http://www.omdbapi.com/', {
         params: {
             apikey: 'a1f890d6',
@@ -43,7 +63,7 @@ const onMovieSelect = async movie => {
         }
     });
 
-    document.querySelector('#summary').innerHTML = movieTemplate(response.data);
+    summaryElement.innerHTML = movieTemplate(response.data);
 };
 
 // HTML for movie details
