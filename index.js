@@ -1,75 +1,36 @@
-const fetchData = async (searchTerm) => {
-    const response = await axios.get('http://www.omdbapi.com/', {
-        params: {
-            apikey: 'a1f890d6',
-            s: searchTerm
-        }
-    });
-
-    if (response.data.Error) {
-        return [];
-    }
-
-    return response.data.Search;
-};
-
-// Root HTML for search input and dropdown
-const root = document.querySelector('.autocomplete');
-root.innerHTML = `
-    <label><b>Search For a Movie</b></label>
-    <input type="text" class="input">
-    <div class="dropdown">
-        <div class="dropdown-menu">
-            <div class="dropdown-content results"></div>
-        </div>
-    </div>
-`;
-
-const input = document.querySelector('input');
-const dropdown = document.querySelector('.dropdown');
-const resultsWrapper = document.querySelector('.results');
-
-const onInput = async event => {
-    const movies = await fetchData(event.target.value);
-
-    // Close dropdown if there are no search results
-    if (!movies.length) {
-        dropdown.classList.remove('is-active');
-        return;
-    }
-
-    // Render dropdown
-    resultsWrapper.innerHTML = '';
-    dropdown.classList.add('is-active');
-    for (let movie of movies) {
-        const option = document.createElement('a');
+createAutoComplete({
+    // Location in HTML where autocomplete is located
+    root: document.querySelector('.autocomplete'),
+    // Render each movie option in dropdown
+    renderOption(movie) {
         const imgSrc = movie.Poster === 'N/A' ? '' : movie.Poster;
-
-        option.classList.add('dropdown-item');
-        option.innerHTML = `
+        return `
             <img src="${imgSrc}"/>
             ${movie.Title} (${movie.Year})
         `;
-        // When user clicks on a movie option from dropdown
-        option.addEventListener('click', () => {
-            // Close dropdown
-            dropdown.classList.remove('is-active');
-            // Update the input to the exact movie title
-            input.value = movie.Title;
-            onMovieSelect(movie);
+    },
+    // Fetch data from API on the selected option and render it to the page
+    onOptionSelect(movie) {
+        onMovieSelect(movie);
+    },
+    // Change input value to the selected movie title
+    inputValue(movie) {
+        return movie.Title
+    },
+    // Fetch movies based on search input
+    async fetchData(searchTerm) {
+        const response = await axios.get('http://www.omdbapi.com/', {
+            params: {
+                apikey: 'a1f890d6',
+                s: searchTerm
+            }
         });
-
-        resultsWrapper.appendChild(option);
-    }
-};
-
-// Wait 500ms to run onIput after user stops typing into search input
-input.addEventListener('input', debounce(onInput, 500));
-
-// Close dropdown if user clicks outside of the dropdown
-document.addEventListener('click', event => {
-    if (!root.contains(event.target)) {
-        dropdown.classList.remove('is-active');
+    
+        if (response.data.Error) {
+            return [];
+        }
+    
+        return response.data.Search;
     }
 });
 
