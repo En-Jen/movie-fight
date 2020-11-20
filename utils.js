@@ -1,4 +1,4 @@
-// Wait some amount of time after an event to fetch data
+// Reusable code to wait some amount of time after an event to do something
 const debounce = (func, delay = 1000) => {
     let timeoutId;
     return (...args) => {
